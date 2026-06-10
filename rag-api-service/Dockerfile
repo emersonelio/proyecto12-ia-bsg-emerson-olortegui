@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY app/ ./app/
 
-RUN mkdir -p /app/temp && chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 
 USER appuser
 

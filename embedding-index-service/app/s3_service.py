@@ -7,13 +7,10 @@ class S3Service:
 
     def __init__(self):
         self.bucket_name = os.getenv("BUCKET_NAME") or os.getenv("S3_BUCKET")
-        self.aws_region = os.getenv("AWS_REGION")
+        self.aws_region = os.getenv("AWS_REGION", "us-east-1")
 
         if not self.bucket_name:
-            raise ValueError("Falta configurar BUCKET_NAME o S3_BUCKET en el archivo .env")
-
-        if not self.aws_region:
-            raise ValueError("Falta configurar AWS_REGION en el archivo .env")
+            raise ValueError("Falta configurar BUCKET_NAME o S3_BUCKET")
 
         self.s3 = boto3.client(
             "s3",
@@ -45,3 +42,26 @@ class S3Service:
         content = response["Body"].read().decode("utf-8")
 
         return json.loads(content)
+
+    def upload_folder(self, local_folder, s3_prefix):
+        for root, dirs, files in os.walk(local_folder):
+            for file in files:
+                local_path = os.path.join(root, file)
+
+                relative_path = os.path.relpath(
+                    local_path,
+                    local_folder
+                ).replace("\\", "/")
+
+                s3_key = f"{s3_prefix.rstrip('/')}/{relative_path}"
+
+                print(
+                    f"Subiendo {local_path} -> "
+                    f"s3://{self.bucket_name}/{s3_key}"
+                )
+
+                self.s3.upload_file(
+                    local_path,
+                    self.bucket_name,
+                    s3_key
+                )

@@ -8,7 +8,7 @@ class ChromaService:
 
         self.chroma_db_path = os.getenv(
             "CHROMA_DB_PATH",
-            "../embedding-index-service/temp/chroma_db"
+            "temp/chroma_db"
         )
 
         self.collection_name = os.getenv(
@@ -26,11 +26,7 @@ class ChromaService:
             name=self.collection_name
         )
 
-    def search(
-        self,
-        query_embedding,
-        top_k=3
-    ):
+    def search(self, query_embedding, top_k=5):
 
         results = self.collection.query(
             query_embeddings=query_embedding.tolist(),

@@ -6,4 +6,5 @@ __pycache__
 .gitignore
 README.md
 *.log
-temp
+temp/
+temp/chroma_db/

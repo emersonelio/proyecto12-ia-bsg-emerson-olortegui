@@ -1,3 +1,4 @@
+import os
 import chromadb
 
 
@@ -5,25 +6,35 @@ class ChromaService:
 
     def __init__(self):
 
+        self.chroma_db_path = os.getenv(
+            "CHROMA_DB_PATH",
+            "temp/chroma_db"
+        )
+
+        self.collection_name = os.getenv(
+            "CHROMA_COLLECTION",
+            "rpa_documents"
+        )
+
         self.client = chromadb.PersistentClient(
-            path="temp/chroma_db"
+            path=self.chroma_db_path
         )
 
         self.collection = self.client.get_or_create_collection(
-            name="rpa_documents"
+            name=self.collection_name
         )
 
     def clear_collection(self):
 
         try:
             self.client.delete_collection(
-                "rpa_documents"
+                self.collection_name
             )
-        except:
+        except Exception:
             pass
 
         self.collection = self.client.get_or_create_collection(
-            name="rpa_documents"
+            name=self.collection_name
         )
 
     def add_documents(
