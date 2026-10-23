@@ -147,13 +147,19 @@ def ask(request: AskRequest):
 
         question_embedding = embedder.generate_embeddings(
             [question]
-        )
+        )        
+        # P1 - Seleccionar el PDD para la PoC     
+        document_id = os.getenv(
+            "PDD_DOCUMENT_ID",
+            "Formato 4.2- Generación de Cronogramas PN V.1.0.2"
+        ).strip()
 
+        # P1 - Buscar únicamente en el documento seleccionado
         results = chroma_service.search(
             query_embedding=question_embedding,
-            top_k=top_k
+            top_k=top_k,
+            document_id=document_id
         )
-
         documents = results.get("documents", [[]])[0]
         metadatas = results.get("metadatas", [[]])[0]
 
