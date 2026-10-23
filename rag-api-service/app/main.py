@@ -2,6 +2,8 @@ import os
 import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+import re
+import unicodedata
 
 from app.embedder import Embedder
 from app.s3_service import S3Service
@@ -30,6 +32,7 @@ CHROMA_S3_PREFIX = os.getenv(
 )
 
 
+
 def restore_chromadb_from_s3():
     logger.info("Restaurando ChromaDB desde S3...")
 
@@ -41,6 +44,32 @@ def restore_chromadb_from_s3():
     )
 
     logger.info("ChromaDB restaurado correctamente desde S3.")
+
+
+
+def es_solicitud_operativa(pregunta: str) -> bool:
+    texto = unicodedata.normalize("NFKD", pregunta.lower())
+    texto = "".join(
+        c for c in texto if not unicodedata.combining(c)
+    )
+    texto = texto.strip(" ¿?¡!.,\n\t")
+
+    menciona_robot = re.search(
+        r"\b(robot|robots|bot|bots|rpa)\b",
+        texto
+    )
+
+    solicita_accion = re.search(
+        r"^(por favor\s+)?"
+        r"(ejecuta|inicia|lanza|arranca|reinicia|deten|detiene)\b"
+        r"|^(puedes|podrias)\s+"
+        r"(ejecutar|iniciar|lanzar|reiniciar|detener)\b"
+        r"|^(quiero|necesito)\s+que\s+"
+        r"(ejecutes|inicies|lances|reinicies|detengas)\b",
+        texto
+    )
+
+    return bool(menciona_robot and solicita_accion)
 
 
 restore_chromadb_from_s3()
@@ -98,6 +127,20 @@ def ask(request: AskRequest):
                 detail="La pregunta no puede estar vacía."
             )
 
+        if es_solicitud_operativa(question):
+            logger.info("Solicitud operativa fuera de alcance rechazada.")
+            return AskResponse(
+                question=question,
+                answer=(
+                    "No puedo ejecutar, detener ni reiniciar robots RPA. "
+                    "Mi función es consultar procedimientos documentados "
+                    "en los PDD autorizados. "
+                    "Para solicitar una ejecución, comunícate con el "
+                    "equipo RPA o utiliza el canal operativo autorizado."
+                ),
+                sources=[]
+
+            )
         top_k = int(os.getenv("TOP_K", "5"))
 
         logger.info(f"Pregunta recibida: {question}")
