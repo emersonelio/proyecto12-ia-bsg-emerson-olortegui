@@ -26,3 +26,15 @@ raw/
 Thumbs.db
 # Videos
 *.mp4
+/arquitectura-mermaid-completa/
+/documentacion-manuales-proyecto/
+/documentos-busqueda/
+/link_video.txt
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv/
+**/node_modules/
+**/.next/
+**/__pycache__/
+**/temp/
