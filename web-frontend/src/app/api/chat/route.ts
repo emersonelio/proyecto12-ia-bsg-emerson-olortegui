@@ -15,18 +15,21 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+    const isLocalDevelopment =
+    process.env.NODE_ENV === "development";
 
-    // 2. Restringir temporalmente el uso a desarrollo local.
-    // Retiraremos esta restricción cuando validemos
-    // la seguridad completa para producción.
-    if (process.env.NODE_ENV !== "development") {
+    const isVercelPreview =
+      process.env.VERCEL_ENV === "preview";
+
+    if (!isLocalDevelopment && !isVercelPreview) {
       return Response.json(
         {
-          error: "Integración no habilitada en producción.",
+      error: "Integración no habilitada en producción.",
         },
         { status: 403 }
-      );
+        );
     }
+
 
     // 3. Validar el contenido de la solicitud
     const body: unknown = await request.json();
